@@ -8,10 +8,16 @@ type Filter = "All" | ProjectStatus;
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "All", label: "Tất cả" },
-  { id: "Doing", label: "Doing" },
-  { id: "Done", label: "Done" },
-  { id: "Paid", label: "Paid" },
+  { id: "Doing", label: "Đang làm" },
+  { id: "Done", label: "Xong" },
+  { id: "Paid", label: "Đã trả" },
 ];
+
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  Doing: "Đang làm",
+  Done: "Xong",
+  Paid: "Đã trả",
+};
 
 function fmtDate(d?: string | null): string {
   if (!d) return "Chưa hẹn ngày";
@@ -96,7 +102,7 @@ export default function Projects() {
         status,
         deadline: job.deadline,
       });
-      toast.success(status === "Paid" ? "Đã Paid, thu nhập tự ghi nhận" : `Đã chuyển job sang ${status}`);
+      toast.success(status === "Paid" ? "Đã trả, thu nhập tự ghi nhận" : `Đã chuyển job sang ${STATUS_LABELS[status].toLowerCase()}`);
       load();
     } catch (e: unknown) {
       toast.error(e);
@@ -206,9 +212,9 @@ export default function Projects() {
                   aria-label={`Trạng thái của ${j.title}`}
                   className="rounded-lg border border-[#E2E8E0] bg-[#FAFBF9] px-2 py-1 text-sm"
                 >
-                  <option value="Doing">Doing</option>
-                  <option value="Done">Done</option>
-                  <option value="Paid">Paid</option>
+                  <option value="Doing">Đang làm</option>
+                  <option value="Done">Xong</option>
+                  <option value="Paid">Đã trả</option>
                 </select>
                 {(j.status === "Done" || j.status === "Paid") && (
                   <button

@@ -4,3 +4,15 @@ dist/
 .setting/
 logs/
 *.log
+
+# .NET build artifacts
+bin/
+obj/
+out/
+
+# User-specific / secrets — never commit
+*.user
+*.suo
+.vs/
+appsettings.*.local.json
+secrets.json

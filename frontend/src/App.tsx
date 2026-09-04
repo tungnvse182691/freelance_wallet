@@ -1,5 +1,8 @@
 import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
+import Clients from "./pages/Clients";
+import Transactions from "./pages/Transactions";
 
 type Tab = "overview" | "jobs" | "clients" | "txs";
 
@@ -14,14 +17,6 @@ function currentMonth(): string {
   const d = new Date();
   const m = `${d.getMonth() + 1}`.padStart(2, "0");
   return `${d.getFullYear()}-${m}`;
-}
-
-function ComingSoon({ text }: { text: string }) {
-  return (
-    <div className="rounded-xl border border-[#E2E8E0] bg-white p-6 text-center">
-      <p className="text-sm text-[#64748B]">{text}</p>
-    </div>
-  );
 }
 
 export default function App() {
@@ -65,9 +60,9 @@ export default function App() {
 
       <main className="mx-auto max-w-3xl px-4 py-5">
         {tab === "overview" && <Dashboard month={month} />}
-        {tab === "jobs" && <ComingSoon text="Tab Job làm ở Task 3 — thêm/sửa job, đổi trạng thái, xuất invoice." />}
-        {tab === "clients" && <ComingSoon text="Tab Khách làm ở Task 3 — thêm/sửa/xóa khách." />}
-        {tab === "txs" && <ComingSoon text="Tab Thu chi làm ở Task 3 — ghi thu/chi theo tháng." />}
+        {tab === "jobs" && <Projects />}
+        {tab === "clients" && <Clients />}
+        {tab === "txs" && <Transactions month={month} />}
       </main>
     </div>
   );

@@ -4,6 +4,7 @@ import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import Accounts from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
+import { AmbientBackground } from "./components/Cards";
 
 type Tab = "overview" | "jobs" | "clients" | "txs" | "wallets";
 
@@ -26,8 +27,9 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("overview");
 
   return (
-    <div className="min-h-screen bg-[#FAFBF9] text-[#111827]">
-      <header className="sticky top-0 border-b border-[#E2E8E0] bg-[#FAFBF9]/95 backdrop-blur">
+    <div className="relative min-h-screen bg-[#F4F7F4] text-[#111827]">
+      <AmbientBackground />
+      <header className="sticky top-0 z-10 border-b border-[#E2E8E0] bg-[#FAFBF9]/85 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <img src="/logo.svg" alt="Freelance Wallet" width={32} height={32} />
           <h1 className="text-lg font-bold" style={{ fontFamily: '"Be Vietnam Pro", Inter, system-ui, sans-serif' }}>
@@ -60,7 +62,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-5">
+      <main className="relative z-10 mx-auto max-w-3xl px-4 py-5">
         {tab === "overview" && <Dashboard month={month} />}
         {tab === "jobs" && <Projects />}
         {tab === "clients" && <Clients />}

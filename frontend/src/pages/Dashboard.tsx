@@ -62,20 +62,13 @@ export default function Dashboard({ month }: { month: string }) {
   return (
     <div className="space-y-6">
       <section>
-        <StatCard label="Lãi tháng này" value={data.profit} tone="dark" />
+        <StatCard label="Tổng tiền" value={totalBalance} tone="dark" />
         <div className="mt-3 grid grid-cols-2 gap-3">
-          <StatCard label="Thu" value={data.income} tone="green" />
-          <StatCard label="Chi" value={data.expense} tone="red" />
+          <StatCard label="Thu tháng này" value={data.income} tone="green" />
+          <StatCard label="Chi tháng này" value={data.expense} tone="red" />
         </div>
-      </section>
-
-      <section className="rounded-xl border border-[#E2E8E0] bg-white px-4 py-3">
-        <div className="text-sm text-[#64748B]">Tổng tiền trong các ví</div>
-        <div
-          className="mt-0.5 text-2xl font-bold tabular-nums text-[#111827]"
-          style={{ fontFamily: '"Be Vietnam Pro", Inter, system-ui, sans-serif' }}
-        >
-          {formatVND(totalBalance)}
+        <div className="mt-3">
+          <StatCard label="Lãi tháng này" value={data.profit} tone="plain" />
         </div>
       </section>
 

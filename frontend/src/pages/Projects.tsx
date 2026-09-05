@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { apiGet, apiPost, apiPut, downloadInvoicePdf } from "../api/client";
+import { apiDel, apiGet, apiPost, apiPut, downloadInvoicePdf } from "../api/client";
 import type { Client, Project, ProjectStatus } from "../types";
 import { useToast } from "../components/Toast";
 import { formatVND } from "../components/Cards";
@@ -118,6 +118,17 @@ export default function Projects() {
     }
   }
 
+  async function handleDelete(job: Project) {
+    if (!window.confirm(`Xóa job "${job.title}"? Thu/chi đã ghi vẫn giữ lại.`)) return;
+    try {
+      await apiDel(`/api/projects/${job.id}`);
+      toast.success("Đã xóa job");
+      load();
+    } catch (e: unknown) {
+      toast.error(e);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-1">
@@ -225,6 +236,14 @@ export default function Projects() {
                     Xuất invoice
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(j)}
+                  aria-label={`Xóa ${j.title}`}
+                  className="ml-auto rounded-lg border border-[#E2E8E0] px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Xóa
+                </button>
               </div>
             </li>
           ))}

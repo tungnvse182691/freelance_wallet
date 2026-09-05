@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiDel, apiGet, apiPost } from "../api/client";
 import type { AccountBalance, BalancesResult, Project, TransactionRecord, TxType } from "../types";
 import { useToast } from "../components/Toast";
@@ -35,6 +35,30 @@ export default function Transactions({ month }: { month: string }) {
   const [category, setCategory] = useState("");
   const [note, setNote] = useState("");
   const [accounts, setAccounts] = useState<AccountBalance[]>([]);
+  const seeded = useRef(false);
+
+  function pickDefault(list: AccountBalance[]) {
+    setAccounts(list);
+    setAccountId((cur) => cur || list[0]?.id || "");
+  }
+
+  useEffect(() => {
+    apiGet<Project[]>("/api/projects")
+      .then(setJobs)
+      .catch(() => {});
+    apiGet<BalancesResult>("/api/accounts")
+      .then((d) => {
+        if (d.balances.length === 0 && !seeded.current) {
+          seeded.current = true;
+          apiPost("/api/accounts", { name: "Ví chính", openingBalance: 0 })
+            .then(() => apiGet<BalancesResult>("/api/accounts").then((r) => pickDefault(r.balances)))
+            .catch(() => {});
+        } else {
+          pickDefault(d.balances);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function load() {
     setLoading(true);
@@ -51,15 +75,6 @@ export default function Transactions({ month }: { month: string }) {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [month]);
-
-  useEffect(() => {
-    apiGet<Project[]>("/api/projects")
-      .then(setJobs)
-      .catch(() => {});
-    apiGet<BalancesResult>("/api/accounts")
-      .then((d) => setAccounts(d.balances))
-      .catch(() => {});
-  }, []);
 
   const suggestions = [...new Set(list.map((t) => (t.category ?? "").trim()).filter((c) => c !== ""))];
   const accountName = (id?: string | null) => accounts.find((a) => a.id === id)?.name;
@@ -82,7 +97,6 @@ export default function Transactions({ month }: { month: string }) {
       setAmount("");
       setDate(today());
       setProjectId("");
-      setAccountId("");
       setCategory("");
       setNote("");
       setShowForm(false);

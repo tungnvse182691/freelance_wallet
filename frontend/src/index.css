@@ -21,8 +21,12 @@ body {
 .btn-press:hover { filter: brightness(1.06); }
 .btn-press:active { transform: scale(0.95); }
 
+/* Viên pill trượt theo tab active (spring nhẹ) */
+.seg-pill { transition: left 0.34s cubic-bezier(0.34, 1.3, 0.44, 1), width 0.34s cubic-bezier(0.34, 1.3, 0.44, 1); }
+
 @media (prefers-reduced-motion: reduce) {
   .page-in { animation: none; }
   .lift, .btn-press { transition: none; }
   .lift:hover { transform: none; }
+  .seg-pill { transition: none; }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
@@ -25,6 +25,28 @@ function currentMonth(): string {
 export default function App() {
   const [month, setMonth] = useState(currentMonth);
   const [tab, setTab] = useState<Tab>("overview");
+  const [pill, setPill] = useState({ left: 0, width: 0 });
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useLayoutEffect(() => {
+    function measure() {
+      const i = TABS.findIndex((t) => t.id === tab);
+      const el = btnRefs.current[i];
+      if (el) setPill({ left: el.offsetLeft, width: el.offsetWidth });
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [tab]);
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    const i = TABS.findIndex((t) => t.id === tab);
+    const n = (i + (e.key === "ArrowRight" ? 1 : -1) + TABS.length) % TABS.length;
+    setTab(TABS[n].id);
+    btnRefs.current[n]?.focus();
+  }
 
   return (
     <div className="relative min-h-screen bg-[#F4F7F4] text-[#111827]">
@@ -41,19 +63,37 @@ export default function App() {
               value={month}
               onChange={(e) => e.target.value && setMonth(e.target.value)}
               aria-label="Chọn tháng"
-              className="rounded-lg border border-[#E2E8E0] bg-white px-2 py-1.5 text-sm"
+              className="rounded-full border border-[#E2E8E0] bg-white/80 px-3 py-1.5 text-sm shadow-sm backdrop-blur"
             />
           </div>
         </div>
-        <nav className="mx-auto flex max-w-3xl gap-1 px-4 pb-3" aria-label="Điều hướng">
-          {TABS.map((t) => (
+        <nav
+          className="relative mx-auto flex max-w-3xl gap-1 rounded-2xl border border-white/60 bg-white/70 px-1.5 py-1.5 shadow-[0_8px_24px_-12px_rgb(17_24_39/0.25),inset_0_1px_0_rgb(255_255_255/0.7)] backdrop-blur-xl"
+          aria-label="Điều hướng"
+          onKeyDown={onKeyDown}
+        >
+          <span
+            aria-hidden="true"
+            className="seg-pill absolute top-1.5 bottom-1.5 rounded-xl"
+            style={{
+              left: pill.left,
+              width: pill.width,
+              background: "linear-gradient(135deg, #1a2b22 0%, #111827 100%)",
+              boxShadow:
+                "0 6px 16px -6px rgb(20_83_45/0.55), inset 0 1px 0 rgb(255_255_255/0.15)",
+            }}
+          />
+          {TABS.map((t, i) => (
             <button
               key={t.id}
+              ref={(el) => {
+                btnRefs.current[i] = el;
+              }}
               type="button"
               onClick={() => setTab(t.id)}
               aria-current={tab === t.id ? "page" : undefined}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-                tab === t.id ? "bg-[#111827] text-white" : "text-[#64748B] hover:bg-slate-200/60 hover:text-[#111827]"
+              className={`relative z-10 flex-1 rounded-xl px-2 py-2 text-sm font-medium transition-colors duration-200 ${
+                tab === t.id ? "text-white" : "text-[#64748B] hover:text-[#111827]"
               }`}
             >
               {t.label}

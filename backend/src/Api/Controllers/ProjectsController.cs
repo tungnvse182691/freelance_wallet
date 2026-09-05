@@ -63,6 +63,10 @@ public class ProjectsController(AppDbContext db) : ControllerBase
     {
         var p = await db.Projects.FindAsync(id);
         if (p is null) return NotFound(new { message = "Không tìm thấy job" });
+        var invoices = await db.Invoices.Where(i => i.ProjectId == id).ToListAsync();
+        db.Invoices.RemoveRange(invoices);
+        var txs = await db.Transactions.Where(t => t.ProjectId == id).ToListAsync();
+        foreach (var t in txs) t.ProjectId = null;
         db.Projects.Remove(p);
         await db.SaveChangesAsync();
         return NoContent();

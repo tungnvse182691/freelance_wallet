@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiDel, apiGet, apiPost } from "../api/client";
+import { apiDel, apiGet, apiPost, apiPut } from "../api/client";
 import type { AccountBalance, BalancesResult } from "../types";
 import { useToast } from "../components/Toast";
 import { formatVND } from "../components/Cards";
@@ -17,6 +17,7 @@ export default function Accounts() {
 
   const [name, setName] = useState("");
   const [openingBalance, setOpeningBalance] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -40,13 +41,19 @@ export default function Accounts() {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiPost<AccountBalance>("/api/accounts", {
+      const body = {
         name,
         openingBalance: openingBalance === "" ? 0 : Number(openingBalance),
-      });
-      toast.success("Đã thêm ví");
+      };
+      if (editingId) {
+        await apiPut<AccountBalance>(`/api/accounts/${editingId}`, body);
+      } else {
+        await apiPost<AccountBalance>("/api/accounts", body);
+      }
+      toast.success(editingId ? "Đã sửa ví" : "Đã thêm ví");
       setName("");
       setOpeningBalance("");
+      setEditingId(null);
       setShowForm(false);
       load();
     } catch (err: unknown) {
@@ -54,6 +61,13 @@ export default function Accounts() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleEdit(a: AccountBalance) {
+    setName(a.name);
+    setOpeningBalance(String(a.openingBalance));
+    setEditingId(a.id);
+    setShowForm(true);
   }
 
   async function handleDelete(a: AccountBalance) {
@@ -73,7 +87,12 @@ export default function Accounts() {
         <h2 className="text-base font-bold text-[#111827]">Ví của tôi</h2>
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            setEditingId(null);
+            setName("");
+            setOpeningBalance("");
+            setShowForm((v) => !v);
+          }}
           className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Ví
@@ -159,6 +178,13 @@ export default function Accounts() {
                       <div className="truncate text-sm font-medium text-slate-300">{a.name}</div>
                       <div className="mt-0.5 text-xl font-bold tabular-nums">{formatVND(a.balance)}</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(a)}
+                      className="btn-press shrink-0 rounded-lg border border-white/25 px-3 py-1 text-sm font-medium text-white/90 hover:bg-white/10"
+                    >
+                      Sửa
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(a)}

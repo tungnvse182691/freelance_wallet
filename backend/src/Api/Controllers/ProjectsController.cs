@@ -49,11 +49,15 @@ public class ProjectsController(AppDbContext db) : ControllerBase
         var wasPaid = p.Status == ProjectStatuses.Paid;
         p.Title = dto.Title.Trim(); p.Price = dto.Price; p.Status = dto.Status; p.Deadline = dto.Deadline;
         if (dto.Status == ProjectStatuses.Paid && !wasPaid)
+        {
+            var firstAccount = await db.Accounts.OrderBy(a => a.CreatedAt).FirstOrDefaultAsync();
             db.Transactions.Add(new Transaction
             {
                 ProjectId = p.Id, Type = TransactionTypes.Income, Amount = p.Price,
-                Date = DateOnly.FromDateTime(DateTime.UtcNow), Note = $"Thu từ job {p.Title}"
+                Date = DateOnly.FromDateTime(DateTime.UtcNow), Note = $"Thu từ job {p.Title}",
+                AccountId = firstAccount?.Id
             });
+        }
         await db.SaveChangesAsync();
         return Ok(p);
     }

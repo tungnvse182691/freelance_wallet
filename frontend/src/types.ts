@@ -57,6 +57,7 @@ export interface AccountBalance {
   id: string;
   name: string;
   balance: number;
+  openingBalance: number;
 }
 
 export interface BalancesResult {

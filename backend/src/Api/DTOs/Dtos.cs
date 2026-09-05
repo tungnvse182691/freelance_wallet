@@ -5,6 +5,7 @@ public record CreateProjectDto(Guid ClientId, string Title, decimal Price, DateO
 public record UpdateProjectDto(string Title, decimal Price, string Status, DateOnly? Deadline);
 public record CreateTransactionDto(Guid? ProjectId, string Type, decimal Amount, DateOnly Date, string? Note, Guid? AccountId = null, string? Category = null);
 public record CreateAccountDto(string Name, decimal OpeningBalance);
+public record UpdateAccountDto(string Name, decimal OpeningBalance);
 public record DashboardResponse(decimal Income, decimal Expense, decimal Profit,
     IReadOnlyList<Services.OverdueItemDto> Overdue, IReadOnlyList<object> Doing,
     decimal TotalBalance, IReadOnlyList<Services.AccountBalanceDto> Accounts,

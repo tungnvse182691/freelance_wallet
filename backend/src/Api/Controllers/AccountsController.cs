@@ -29,11 +29,26 @@ public class AccountsController(AppDbContext db) : ControllerBase
         db.Accounts.Add(a);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = a.Id },
-            new Services.AccountBalanceDto(a.Id, a.Name, a.OpeningBalance));
+            new Services.AccountBalanceDto(a.Id, a.Name, a.OpeningBalance, a.OpeningBalance));
     }
 
     [HttpGet("{id:guid}")] public async Task<IActionResult> Get(Guid id)
         => await db.Accounts.FindAsync(id) is { } a ? Ok(a) : NotFound(new { message = "Không tìm thấy ví" });
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, UpdateAccountDto dto)
+    {
+        var a = await db.Accounts.FindAsync(id);
+        if (a is null) return NotFound(new { message = "Không tìm thấy ví" });
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest(new { message = "Tên ví không được để trống" });
+        if (dto.OpeningBalance < 0)
+            return BadRequest(new { message = "Số dư đầu kỳ không được âm" });
+        a.Name = dto.Name.Trim();
+        a.OpeningBalance = dto.OpeningBalance;
+        await db.SaveChangesAsync();
+        return Ok(a);
+    }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)

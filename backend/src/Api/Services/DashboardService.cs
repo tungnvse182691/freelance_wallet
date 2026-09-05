@@ -3,7 +3,7 @@ using FreelanceWallet.Domain.Entities;
 namespace FreelanceWallet.Api.Services;
 
 public record OverdueItemDto(Guid ProjectId, string Title, string ClientName, DateOnly? Deadline, decimal Price);
-public record AccountBalanceDto(Guid Id, string Name, decimal Balance);
+public record AccountBalanceDto(Guid Id, string Name, decimal Balance, decimal OpeningBalance);
 public record BalancesResult(IReadOnlyList<AccountBalanceDto> Balances, decimal Total);
 public record CategoryTotalDto(string Category, decimal Total);
 
@@ -33,7 +33,7 @@ public static class DashboardService
             var flows = list.Where(t => t.AccountId == a.Id);
             var income = flows.Where(t => t.Type == TransactionTypes.Income).Sum(t => t.Amount);
             var expense = flows.Where(t => t.Type == TransactionTypes.Expense).Sum(t => t.Amount);
-            return new AccountBalanceDto(a.Id, a.Name, a.OpeningBalance + income - expense);
+            return new AccountBalanceDto(a.Id, a.Name, a.OpeningBalance + income - expense, a.OpeningBalance);
         }).ToList();
         return new BalancesResult(balances, balances.Sum(b => b.Balance));
     }

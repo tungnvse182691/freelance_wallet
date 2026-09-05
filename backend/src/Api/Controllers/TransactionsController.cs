@@ -37,6 +37,26 @@ public class TransactionsController(AppDbContext db) : ControllerBase
     [HttpGet("{id:guid}")] public async Task<IActionResult> Get(Guid id)
         => await db.Transactions.FindAsync(id) is { } t ? Ok(t) : NotFound(new { message = "Không tìm thấy giao dịch" });
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, UpdateTransactionDto dto)
+    {
+        var t = await db.Transactions.FindAsync(id);
+        if (t is null) return NotFound(new { message = "Không tìm thấy giao dịch" });
+        if (dto.Amount <= 0)
+            return BadRequest(new { message = "Số tiền phải lớn hơn 0" });
+        if (dto.Type is not (TransactionTypes.Income or TransactionTypes.Expense))
+            return BadRequest(new { message = "Loại giao dịch không hợp lệ" });
+        if (dto.ProjectId.HasValue && !await db.Projects.AnyAsync(p => p.Id == dto.ProjectId))
+            return BadRequest(new { message = "Job không tồn tại" });
+        if (dto.AccountId.HasValue && !await db.Accounts.AnyAsync(a => a.Id == dto.AccountId))
+            return BadRequest(new { message = "Ví không tồn tại" });
+        t.ProjectId = dto.ProjectId; t.Type = dto.Type; t.Amount = dto.Amount; t.Date = dto.Date;
+        t.Note = dto.Note; t.AccountId = dto.AccountId;
+        t.Category = string.IsNullOrWhiteSpace(dto.Category) ? null : dto.Category.Trim();
+        await db.SaveChangesAsync();
+        return Ok(t);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

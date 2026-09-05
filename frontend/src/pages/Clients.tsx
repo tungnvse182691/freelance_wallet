@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiDel, apiGet, apiPost } from "../api/client";
+import { apiDel, apiGet, apiPost, apiPut } from "../api/client";
 import type { Client } from "../types";
 import { useToast } from "../components/Toast";
 
@@ -18,6 +18,7 @@ export default function Clients() {
   const [email, setEmail] = useState("");
   const [bankAccount, setBankAccount] = useState("");
   const [note, setNote] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -39,19 +40,21 @@ export default function Clients() {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiPost<Client>("/api/clients", {
+      const body = {
         name,
         phone: phone || null,
         email: email || null,
         bankAccount: bankAccount || null,
         note: note || null,
-      });
-      toast.success("Đã thêm khách");
-      setName("");
-      setPhone("");
-      setEmail("");
-      setBankAccount("");
-      setNote("");
+      };
+      if (editingId) {
+        await apiPut<Client>(`/api/clients/${editingId}`, body);
+        toast.success("Đã sửa khách");
+      } else {
+        await apiPost<Client>("/api/clients", body);
+        toast.success("Đã thêm khách");
+      }
+      resetForm();
       setShowForm(false);
       load();
     } catch (err: unknown) {
@@ -59,6 +62,25 @@ export default function Clients() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function resetForm() {
+    setName("");
+    setPhone("");
+    setEmail("");
+    setBankAccount("");
+    setNote("");
+    setEditingId(null);
+  }
+
+  function handleEdit(c: Client) {
+    setName(c.name);
+    setPhone(c.phone ?? "");
+    setEmail(c.email ?? "");
+    setBankAccount(c.bankAccount ?? "");
+    setNote(c.note ?? "");
+    setEditingId(c.id);
+    setShowForm(true);
   }
 
   async function handleDelete(c: Client) {
@@ -80,7 +102,10 @@ export default function Clients() {
         </h2>
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            resetForm();
+            setShowForm((v) => !v);
+          }}
           className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Khách
@@ -89,6 +114,9 @@ export default function Clients() {
 
       {showForm && (
         <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-[#E2E8E0] bg-white p-4">
+          {editingId ? (
+            <p className="text-sm font-semibold text-[#111827]">Đang sửa khách</p>
+          ) : null}
           <label className="block">
             <span className="mb-1 block text-sm text-[#64748B]">Tên khách</span>
             <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} required maxLength={200} />
@@ -143,6 +171,14 @@ export default function Clients() {
                   {[c.phone, c.email].filter(Boolean).join(" · ") || "Chưa có liên lạc"}
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={() => handleEdit(c)}
+                aria-label={`Sửa ${c.name}`}
+                className="shrink-0 rounded-lg border border-[#E2E8E0] px-3 py-1 text-sm font-medium text-[#111827] hover:bg-slate-100"
+              >
+                Sửa
+              </button>
               <button
                 type="button"
                 onClick={() => handleDelete(c)}

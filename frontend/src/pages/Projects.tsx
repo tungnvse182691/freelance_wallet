@@ -54,6 +54,7 @@ export default function Projects() {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [editing, setEditing] = useState<{ id: string; status: ProjectStatus } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -87,17 +88,24 @@ export default function Projects() {
     }
     setSaving(true);
     try {
-      await apiPost<Project>("/api/projects", {
-        clientId,
-        title,
-        price: Number(price),
-        deadline: deadline || null,
-      });
-      toast.success("Đã thêm job");
-      setClientId("");
-      setTitle("");
-      setPrice("");
-      setDeadline("");
+      if (editing) {
+        await apiPut<Project>(`/api/projects/${editing.id}`, {
+          title,
+          price: Number(price),
+          status: editing.status,
+          deadline: deadline || null,
+        });
+        toast.success("Đã sửa job");
+      } else {
+        await apiPost<Project>("/api/projects", {
+          clientId,
+          title,
+          price: Number(price),
+          deadline: deadline || null,
+        });
+        toast.success("Đã thêm job");
+      }
+      resetForm();
       setShowForm(false);
       load();
     } catch (err: unknown) {
@@ -105,6 +113,23 @@ export default function Projects() {
     } finally {
       setSaving(false);
     }
+  }
+
+  function resetForm() {
+    setClientId("");
+    setTitle("");
+    setPrice("");
+    setDeadline("");
+    setEditing(null);
+  }
+
+  function handleEdit(job: Project) {
+    setClientId(job.clientId);
+    setTitle(job.title);
+    setPrice(String(job.price));
+    setDeadline(job.deadline ?? "");
+    setEditing({ id: job.id, status: job.status });
+    setShowForm(true);
   }
 
   async function handleStatus(job: Project, status: ProjectStatus) {
@@ -159,7 +184,10 @@ export default function Projects() {
         ))}
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            resetForm();
+            setShowForm((v) => !v);
+          }}
           className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Job
@@ -168,9 +196,19 @@ export default function Projects() {
 
       {showForm && (
         <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-[#E2E8E0] bg-white p-4">
+          {editing ? (
+            <p className="text-sm font-semibold text-[#111827]">
+              Đang sửa job
+              {editing.status === "Paid" && (
+                <span className="mt-1 block text-xs font-normal text-[#64748B]">
+                  Đổi giá job Đã trả không đổi thu nhập đã ghi — sửa số tiền ở tab Thu chi.
+                </span>
+              )}
+            </p>
+          ) : null}
           <label className="block">
             <span className="mb-1 block text-sm text-[#64748B]">Khách</span>
-            <select value={clientId} onChange={(e) => setClientId(e.target.value)} className={inputCls} required>
+            <select value={clientId} onChange={(e) => setClientId(e.target.value)} className={inputCls} required disabled={editing !== null}>
               <option value="">— Chọn khách —</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -258,6 +296,14 @@ export default function Projects() {
                     Xuất invoice
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => handleEdit(j)}
+                  aria-label={`Sửa ${j.title}`}
+                  className="rounded-lg border border-[#E2E8E0] px-3 py-1 text-sm font-medium text-[#111827] hover:bg-slate-100"
+                >
+                  Sửa
+                </button>
                 <button
                   type="button"
                   onClick={() => handleDelete(j)}

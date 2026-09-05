@@ -26,6 +26,19 @@ public class ClientsController(AppDbContext db) : ControllerBase
     [HttpGet("{id:guid}")] public async Task<IActionResult> Get(Guid id)
         => await db.Clients.FindAsync(id) is { } c ? Ok(c) : NotFound(new { message = "Không tìm thấy khách hàng" });
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, UpdateClientDto dto)
+    {
+        var c = await db.Clients.FindAsync(id);
+        if (c is null) return NotFound(new { message = "Không tìm thấy khách hàng" });
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            return BadRequest(new { message = "Tên khách hàng không được để trống" });
+        c.Name = dto.Name.Trim(); c.Phone = dto.Phone; c.Email = dto.Email;
+        c.BankAccount = dto.BankAccount; c.Note = dto.Note;
+        await db.SaveChangesAsync();
+        return Ok(c);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

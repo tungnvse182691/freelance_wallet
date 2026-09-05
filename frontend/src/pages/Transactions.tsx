@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { apiDel, apiGet, apiPost } from "../api/client";
+import { apiDel, apiGet, apiPost, apiPut } from "../api/client";
 import type { AccountBalance, BalancesResult, Project, TransactionRecord, TxType } from "../types";
 import { useToast } from "../components/Toast";
 import { formatVND } from "../components/Cards";
@@ -35,6 +35,7 @@ export default function Transactions({ month }: { month: string }) {
   const [category, setCategory] = useState("");
   const [note, setNote] = useState("");
   const [accounts, setAccounts] = useState<AccountBalance[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const seeded = useRef(false);
 
   function pickDefault(list: AccountBalance[]) {
@@ -83,7 +84,7 @@ export default function Transactions({ month }: { month: string }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await apiPost<TransactionRecord>("/api/transactions", {
+      const body = {
         type,
         amount: Number(amount),
         date,
@@ -91,14 +92,15 @@ export default function Transactions({ month }: { month: string }) {
         accountId: accountId || null,
         category: category.trim() === "" ? null : category.trim(),
         note: note || null,
-      });
-      toast.success(type === "Income" ? "Đã ghi thu" : "Đã ghi chi");
-      setType("Expense");
-      setAmount("");
-      setDate(today());
-      setProjectId("");
-      setCategory("");
-      setNote("");
+      };
+      if (editingId) {
+        await apiPut<TransactionRecord>(`/api/transactions/${editingId}`, body);
+        toast.success("Đã sửa giao dịch");
+      } else {
+        await apiPost<TransactionRecord>("/api/transactions", body);
+        toast.success(type === "Income" ? "Đã ghi thu" : "Đã ghi chi");
+      }
+      resetForm();
       setShowForm(false);
       load();
     } catch (err: unknown) {
@@ -107,6 +109,29 @@ export default function Transactions({ month }: { month: string }) {
       setSaving(false);
     }
   }
+
+  function resetForm() {
+    setType("Expense");
+    setAmount("");
+    setDate(today());
+    setProjectId("");
+    setCategory("");
+    setNote("");
+    setEditingId(null);
+  }
+
+  function handleEdit(t: TransactionRecord) {
+    setType(t.type);
+    setAmount(String(t.amount));
+    setDate(t.date);
+    setProjectId(t.projectId ?? "");
+    setAccountId(t.accountId ?? "");
+    setCategory(t.category ?? "");
+    setNote(t.note ?? "");
+    setEditingId(t.id);
+    setShowForm(true);
+  }
+
 
   async function handleDelete(t: TransactionRecord) {
     if (!window.confirm("Xóa giao dịch này?")) return;
@@ -128,7 +153,10 @@ export default function Transactions({ month }: { month: string }) {
         </h2>
         <button
           type="button"
-          onClick={() => setShowForm((v) => !v)}
+          onClick={() => {
+            resetForm();
+            setShowForm((v) => !v);
+          }}
           className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Thu chi
@@ -137,6 +165,9 @@ export default function Transactions({ month }: { month: string }) {
 
       {showForm && (
         <form onSubmit={handleAdd} className="space-y-3 rounded-xl border border-[#E2E8E0] bg-white p-4">
+          {editingId ? (
+            <p className="text-sm font-semibold text-[#111827]">Đang sửa giao dịch</p>
+          ) : null}
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className="mb-1 block text-sm text-[#64748B]">Loại</span>
@@ -252,6 +283,14 @@ export default function Transactions({ month }: { month: string }) {
               </div>
               <button
                 type="button"
+                onClick={() => handleEdit(t)}
+                aria-label={`Sửa giao dịch ${t.note ?? t.amount}`}
+                className="shrink-0 rounded-lg border border-[#E2E8E0] px-2 py-1 text-xs font-medium text-[#111827] hover:bg-slate-100"
+              >
+                Sửa
+              </button>
+              <button
+                type="button"
                 onClick={() => handleDelete(t)}
                 aria-label={`Xóa giao dịch ${t.note ?? t.amount}`}
                 className="shrink-0 rounded-lg border border-red-200 px-2 py-1 text-xs font-medium text-red-700"
@@ -265,4 +304,5 @@ export default function Transactions({ month }: { month: string }) {
     </div>
   );
 }
+
 

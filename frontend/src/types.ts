@@ -26,6 +26,8 @@ export interface Project {
 export interface TransactionRecord {
   id: string;
   projectId?: string | null;
+  accountId?: string | null;
+  category?: string | null;
   type: TxType;
   amount: number;
   date: string;
@@ -46,6 +48,25 @@ export interface DashboardResponse {
   profit: number;
   overdue: OverdueItem[];
   doing: { id: string; title: string; clientName: string; deadline?: string | null; price: number }[];
+  totalBalance: number;
+  accounts: AccountBalance[];
+  expenseByCategory: CategoryTotal[];
+}
+
+export interface AccountBalance {
+  id: string;
+  name: string;
+  balance: number;
+}
+
+export interface BalancesResult {
+  balances: AccountBalance[];
+  total: number;
+}
+
+export interface CategoryTotal {
+  category: string;
+  total: number;
 }
 
 export interface ApiError {

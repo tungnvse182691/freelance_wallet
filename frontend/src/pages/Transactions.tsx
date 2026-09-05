@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { apiDel, apiGet, apiPost } from "../api/client";
-import type { Project, TransactionRecord, TxType } from "../types";
+import type { AccountBalance, BalancesResult, Project, TransactionRecord, TxType } from "../types";
 import { useToast } from "../components/Toast";
 import { formatVND } from "../components/Cards";
 
@@ -31,7 +31,10 @@ export default function Transactions({ month }: { month: string }) {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
   const [projectId, setProjectId] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [category, setCategory] = useState("");
   const [note, setNote] = useState("");
+  const [accounts, setAccounts] = useState<AccountBalance[]>([]);
 
   async function load() {
     setLoading(true);
@@ -53,7 +56,13 @@ export default function Transactions({ month }: { month: string }) {
     apiGet<Project[]>("/api/projects")
       .then(setJobs)
       .catch(() => {});
+    apiGet<BalancesResult>("/api/accounts")
+      .then((d) => setAccounts(d.balances))
+      .catch(() => {});
   }, []);
+
+  const suggestions = [...new Set(list.map((t) => (t.category ?? "").trim()).filter((c) => c !== ""))];
+  const accountName = (id?: string | null) => accounts.find((a) => a.id === id)?.name;
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +73,8 @@ export default function Transactions({ month }: { month: string }) {
         amount: Number(amount),
         date,
         projectId: projectId || null,
+        accountId: accountId || null,
+        category: category.trim() === "" ? null : category.trim(),
         note: note || null,
       });
       toast.success(type === "Income" ? "Đã ghi thu" : "Đã ghi chi");
@@ -71,6 +82,8 @@ export default function Transactions({ month }: { month: string }) {
       setAmount("");
       setDate(today());
       setProjectId("");
+      setAccountId("");
+      setCategory("");
       setNote("");
       setShowForm(false);
       load();
@@ -147,6 +160,35 @@ export default function Transactions({ month }: { month: string }) {
               </select>
             </label>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="mb-1 block text-sm text-[#64748B]">Ví</span>
+              <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={inputCls}>
+                <option value="">— Chưa chọn ví —</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm text-[#64748B]">Mảng</span>
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={inputCls}
+                list="tx-categories"
+                placeholder="Ăn uống, server…"
+                maxLength={100}
+              />
+              <datalist id="tx-categories">
+                {suggestions.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </label>
+          </div>
           <label className="block">
             <span className="mb-1 block text-sm text-[#64748B]">Ghi chú</span>
             <input value={note} onChange={(e) => setNote(e.target.value)} className={inputCls} placeholder="Tiền server, domain…" />
@@ -180,7 +222,11 @@ export default function Transactions({ month }: { month: string }) {
                 <div className="truncate text-sm font-semibold text-[#111827]">
                   {t.note || (t.type === "Income" ? "Thu" : "Chi")}
                 </div>
-                <div className="mt-0.5 text-xs text-[#64748B]">{fmtDate(t.date)}</div>
+                <div className="mt-0.5 truncate text-xs text-[#64748B]">
+                  {fmtDate(t.date)}
+                  {t.category ? ` · ${t.category}` : ""}
+                  {accountName(t.accountId) ? ` · ${accountName(t.accountId)}` : ""}
+                </div>
               </div>
               <div
                 className={`shrink-0 text-sm font-bold tabular-nums ${

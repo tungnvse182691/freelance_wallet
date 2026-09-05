@@ -2,15 +2,17 @@ import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
+import Accounts from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
 
-type Tab = "overview" | "jobs" | "clients" | "txs";
+type Tab = "overview" | "jobs" | "clients" | "txs" | "wallets";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Tổng quan" },
   { id: "jobs", label: "Job" },
   { id: "clients", label: "Khách" },
   { id: "txs", label: "Thu chi" },
+  { id: "wallets", label: "Ví" },
 ];
 
 function currentMonth(): string {
@@ -63,6 +65,7 @@ export default function App() {
         {tab === "jobs" && <Projects />}
         {tab === "clients" && <Clients />}
         {tab === "txs" && <Transactions month={month} />}
+        {tab === "wallets" && <Accounts />}
       </main>
     </div>
   );

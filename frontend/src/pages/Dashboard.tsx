@@ -55,6 +55,10 @@ export default function Dashboard({ month }: { month: string }) {
     );
   }
 
+  const totalBalance = data.totalBalance ?? 0;
+  const expenseByCategory = data.expenseByCategory ?? [];
+  const maxCategory = Math.max(0, ...expenseByCategory.map((c) => c.total));
+
   return (
     <div className="space-y-6">
       <section>
@@ -63,6 +67,40 @@ export default function Dashboard({ month }: { month: string }) {
           <StatCard label="Thu" value={data.income} tone="green" />
           <StatCard label="Chi" value={data.expense} tone="red" />
         </div>
+      </section>
+
+      <section className="rounded-xl border border-[#E2E8E0] bg-white px-4 py-3">
+        <div className="text-sm text-[#64748B]">Tổng tiền trong các ví</div>
+        <div
+          className="mt-0.5 text-2xl font-bold tabular-nums text-[#111827]"
+          style={{ fontFamily: '"Be Vietnam Pro", Inter, system-ui, sans-serif' }}
+        >
+          {formatVND(totalBalance)}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-base font-bold text-[#111827]">Chi theo mảng</h2>
+        {expenseByCategory.length === 0 ? (
+          <p className="mt-2 text-sm text-[#64748B]">Tháng này chưa có khoản chi nào.</p>
+        ) : (
+          <ul className="mt-2 space-y-2 rounded-xl border border-[#E2E8E0] bg-white p-4">
+            {expenseByCategory.map((c) => (
+              <li key={c.category}>
+                <div className="flex items-baseline gap-3">
+                  <span className="min-w-0 flex-1 truncate text-sm text-[#111827]">{c.category}</span>
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-red-700">{formatVND(c.total)}</span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#E2E8E0]">
+                  <div
+                    className="h-full rounded-full bg-[#DC2626]"
+                    style={{ width: `${maxCategory > 0 ? (c.total / maxCategory) * 100 : 0}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section>

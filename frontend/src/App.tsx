@@ -51,7 +51,7 @@ export default function App() {
   return (
     <div className="relative min-h-screen bg-[#F4F7F4] text-[#111827]">
       <AmbientBackground />
-      <header className="sticky top-0 z-10 border-b border-[#E2E8E0] bg-[#FAFBF9]/85 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-[#E2E8E0] bg-[#F4F7F4]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <img src="/logo.svg" alt="Freelance Wallet" width={32} height={32} />
           <h1 className="text-lg font-bold" style={{ fontFamily: '"Be Vietnam Pro", Inter, system-ui, sans-serif' }}>

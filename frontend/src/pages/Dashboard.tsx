@@ -1,4 +1,15 @@
 import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { getDashboard } from "../api/client";
 import type { DashboardResponse } from "../types";
 import { useToast } from "../components/Toast";
@@ -14,6 +25,7 @@ export default function Dashboard({ month }: { month: string }) {
   const toast = useToast();
   const [data, setData] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState<{ m: string; thu: number; chi: number }[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -32,6 +44,29 @@ export default function Dashboard({ month }: { month: string }) {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [month]);
+
+  useEffect(() => {
+    let alive = true;
+    const [y, mo] = month.split("-").map(Number);
+    const months: string[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(y, mo - 1 - i, 1);
+      months.push(`${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, "0")}`);
+    }
+    Promise.all(months.map((m) => getDashboard(m).catch(() => null))).then((res) => {
+      if (!alive) return;
+      setHistory(
+        res.map((r, i) => ({
+          m: months[i].slice(5) + "/" + months[i].slice(2, 4),
+          thu: r?.income ?? 0,
+          chi: r?.expense ?? 0,
+        })),
+      );
+    });
+    return () => {
+      alive = false;
+    };
   }, [month]);
 
   if (loading) {
@@ -57,7 +92,6 @@ export default function Dashboard({ month }: { month: string }) {
 
   const totalBalance = data.totalBalance ?? 0;
   const expenseByCategory = data.expenseByCategory ?? [];
-  const maxCategory = Math.max(0, ...expenseByCategory.map((c) => c.total));
 
   return (
     <div className="space-y-6">
@@ -72,27 +106,70 @@ export default function Dashboard({ month }: { month: string }) {
         </div>
       </section>
 
+      <section className="rounded-2xl border border-[#E2E8E0] bg-white/85 p-4 backdrop-blur">
+        <h2 className="text-base font-bold text-[#111827]">Dòng tiền 6 tháng</h2>
+        {history.every((h) => h.thu === 0 && h.chi === 0) ? (
+          <p className="mt-2 text-sm text-[#64748B]">Chưa có số liệu các tháng trước.</p>
+        ) : (
+          <div className="mt-2 h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={history} margin={{ top: 4, right: 4, bottom: 0, left: -18 }}>
+                <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v) => formatVND(Number(v ?? 0))}
+                  contentStyle={{ borderRadius: 12, fontSize: 12 }}
+                />
+                <Bar dataKey="thu" name="Thu" fill="#16A34A" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="chi" name="Chi" fill="#DC2626" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </section>
+
       <section>
         <h2 className="text-base font-bold text-[#111827]">Chi theo mảng</h2>
         {expenseByCategory.length === 0 ? (
           <p className="mt-2 text-sm text-[#64748B]">Tháng này chưa có khoản chi nào.</p>
         ) : (
-          <ul className="mt-2 space-y-2 rounded-xl border border-[#E2E8E0] bg-white p-4">
-            {expenseByCategory.map((c) => (
-              <li key={c.category}>
-                <div className="flex items-baseline gap-3">
-                  <span className="min-w-0 flex-1 truncate text-sm text-[#111827]">{c.category}</span>
-                  <span className="shrink-0 text-sm font-bold tabular-nums text-red-700">{formatVND(c.total)}</span>
-                </div>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#E2E8E0]">
-                  <div
-                    className="h-full rounded-full bg-[#DC2626]"
-                    style={{ width: `${maxCategory > 0 ? (c.total / maxCategory) * 100 : 0}%` }}
+          <div className="mt-2 rounded-xl border border-[#E2E8E0] bg-white p-4">
+            <div className="mx-auto h-44 max-w-[240px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="total"
+                    nameKey="category"
+                    innerRadius="55%"
+                    outerRadius="90%"
+                    paddingAngle={2}
+                    strokeWidth={0}
+                  >
+                    {expenseByCategory.map((c, i) => (
+                      <Cell
+                        key={c.category}
+                        fill={["#DC2626", "#EA580C", "#D97706", "#16A34A", "#0D9488", "#64748B"][i % 6]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v) => formatVND(Number(v ?? 0))} contentStyle={{ borderRadius: 12, fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <ul className="mt-3 space-y-2">
+              {expenseByCategory.map((c, i) => (
+                <li key={c.category} className="flex items-baseline gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ background: ["#DC2626", "#EA580C", "#D97706", "#16A34A", "#0D9488", "#64748B"][i % 6] }}
                   />
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <span className="min-w-0 flex-1 truncate text-sm text-[#111827]">{c.category}</span>
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-[#111827]">{formatVND(c.total)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </section>
 
@@ -149,3 +226,4 @@ export default function Dashboard({ month }: { month: string }) {
     </div>
   );
 }
+

@@ -5,3 +5,24 @@
 body {
   font-family: Inter, "Be Vietnam Pro", system-ui, sans-serif;
 }
+
+/* Hiệu ứng chuyển tab: nội dung trượt nhẹ lên */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.page-in { animation: page-in 0.28s ease-out; }
+
+/* Thẻ tương tác: hover nổi, nhấn lún */
+.lift { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -10px rgb(17 24 39 / 0.25); }
+.lift:active { transform: scale(0.99); }
+.btn-press { transition: transform 0.1s ease, filter 0.15s ease; }
+.btn-press:hover { filter: brightness(1.06); }
+.btn-press:active { transform: scale(0.95); }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-in { animation: none; }
+  .lift, .btn-press { transition: none; }
+  .lift:hover { transform: none; }
+}

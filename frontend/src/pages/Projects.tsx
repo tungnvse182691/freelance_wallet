@@ -25,6 +25,19 @@ function fmtDate(d?: string | null): string {
   return y && m && day ? `${day}/${m}/${y}` : d;
 }
 
+function isOverdue(deadline: string | null | undefined, status: ProjectStatus): boolean {
+  if (!deadline || status === "Paid") return false;
+  const today = new Date();
+  const t = `${today.getFullYear()}-${`${today.getMonth() + 1}`.padStart(2, "0")}-${`${today.getDate()}`.padStart(2, "0")}`;
+  return deadline < t;
+}
+
+const STATUS_EDGE: Record<ProjectStatus, string> = {
+  Doing: "border-l-[#D97706]",
+  Done: "border-l-[#16A34A]",
+  Paid: "border-l-[#111827]",
+};
+
 const inputCls =
   "w-full rounded-lg border border-[#E2E8E0] bg-white px-3 py-2 text-sm focus:border-[#16A34A] focus:outline-none";
 
@@ -147,7 +160,7 @@ export default function Projects() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white"
+          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Job
         </button>
@@ -205,16 +218,25 @@ export default function Projects() {
         </p>
       ) : (
         <ul className="divide-y divide-[#E2E8E0] rounded-xl border border-[#E2E8E0] bg-white">
-          {jobs.map((j) => (
-            <li key={j.id} className="space-y-2 px-4 py-3">
+          {jobs.map((j) => {
+            const late = isOverdue(j.deadline, j.status);
+            return (
+            <li key={j.id} className={`lift space-y-2 border-l-4 bg-white px-4 py-3 ${late ? "border-l-red-600" : STATUS_EDGE[j.status]}`}>
               <div className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-[#111827]">{j.title}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="truncate text-[15px] font-bold text-[#111827]">{j.title}</div>
+                    {late && (
+                      <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                        Quá hạn
+                      </span>
+                    )}
+                  </div>
                   <div className="mt-0.5 text-xs text-[#64748B]">
                     {j.client?.name ?? "Khách lẻ"} · hạn {fmtDate(j.deadline)}
                   </div>
                 </div>
-                <div className="shrink-0 text-sm font-bold tabular-nums">{formatVND(j.price)}</div>
+                <div className="shrink-0 text-lg font-bold tabular-nums text-[#111827]">{formatVND(j.price)}</div>
               </div>
               <div className="flex items-center gap-2">
                 <select
@@ -246,7 +268,8 @@ export default function Projects() {
                 </button>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

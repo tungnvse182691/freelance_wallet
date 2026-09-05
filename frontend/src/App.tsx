@@ -62,7 +62,7 @@ export default function App() {
         </nav>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-3xl px-4 py-5">
+      <main key={tab} className="page-in relative z-10 mx-auto max-w-3xl px-4 py-5">
         {tab === "overview" && <Dashboard month={month} />}
         {tab === "jobs" && <Projects />}
         {tab === "clients" && <Clients />}

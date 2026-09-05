@@ -81,7 +81,7 @@ export default function Clients() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white"
+          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Khách
         </button>
@@ -130,7 +130,13 @@ export default function Clients() {
       ) : (
         <ul className="divide-y divide-[#E2E8E0] rounded-xl border border-[#E2E8E0] bg-white">
           {list.map((c) => (
-            <li key={c.id} className="flex items-center gap-3 px-4 py-3">
+            <li key={c.id} className="lift flex items-center gap-3 bg-white px-4 py-3">
+              <span
+                aria-hidden="true"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#D9FBE8] text-base font-bold text-[#15803D]"
+              >
+                {(c.name.trim().charAt(0) || "?").toUpperCase()}
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold text-[#111827]">{c.name}</div>
                 <div className="mt-0.5 truncate text-xs text-[#64748B]">
@@ -151,3 +157,4 @@ export default function Clients() {
     </div>
   );
 }
+

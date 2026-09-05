@@ -129,7 +129,7 @@ export default function Transactions({ month }: { month: string }) {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white"
+          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Thu chi
         </button>
@@ -228,12 +228,12 @@ export default function Transactions({ month }: { month: string }) {
           {list.map((t) => (
             <li
               key={t.id}
-              className={`flex items-center gap-3 border-l-4 px-4 py-3 ${
+              className={`lift flex items-center gap-3 border-l-4 bg-white px-4 py-3 ${
                 t.type === "Income" ? "border-l-[#16A34A]" : "border-l-[#DC2626]"
               }`}
             >
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-[#111827]">
+                <div className="truncate text-[15px] font-bold text-[#111827]">
                   {t.note || (t.type === "Income" ? "Thu" : "Chi")}
                 </div>
                 <div className="mt-0.5 truncate text-xs text-[#64748B]">
@@ -243,7 +243,7 @@ export default function Transactions({ month }: { month: string }) {
                 </div>
               </div>
               <div
-                className={`shrink-0 text-sm font-bold tabular-nums ${
+                className={`shrink-0 text-base font-bold tabular-nums ${
                   t.type === "Income" ? "text-green-700" : "text-red-700"
                 }`}
               >
@@ -265,3 +265,4 @@ export default function Transactions({ month }: { month: string }) {
     </div>
   );
 }
+

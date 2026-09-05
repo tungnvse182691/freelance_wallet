@@ -74,7 +74,7 @@ export default function Accounts() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white"
+          className="ml-auto rounded-full bg-[#16A34A] px-4 py-1.5 text-sm font-semibold text-white shadow-sm btn-press"
         >
           + Ví
         </button>
@@ -136,20 +136,37 @@ export default function Accounts() {
               Chưa có ví nào. Bấm + Ví để thêm ví đầu tiên.
             </p>
           ) : (
-            <ul className="divide-y divide-[#E2E8E0] rounded-xl border border-[#E2E8E0] bg-white">
-              {balances.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-[#111827]">{a.name}</div>
+            <ul className="space-y-3">
+              {balances.map((a, i) => (
+                <li
+                  key={a.id}
+                  className="lift relative overflow-hidden rounded-2xl p-4 text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${["#14532D", "#0F766E", "#1E3A5F", "#3F3F46"][i % 4]} 0%, #111827 100%)`,
+                  }}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-white/10"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute -bottom-12 right-16 h-24 w-24 rounded-full bg-white/5"
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <span aria-hidden="true" className="h-8 w-11 shrink-0 rounded-md bg-gradient-to-br from-amber-200 to-amber-400 opacity-90" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-slate-300">{a.name}</div>
+                      <div className="mt-0.5 text-xl font-bold tabular-nums">{formatVND(a.balance)}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(a)}
+                      className="btn-press shrink-0 rounded-lg border border-white/25 px-3 py-1 text-sm font-medium text-white/90 hover:bg-white/10"
+                    >
+                      Xóa
+                    </button>
                   </div>
-                  <div className="shrink-0 text-sm font-bold tabular-nums text-[#111827]">{formatVND(a.balance)}</div>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(a)}
-                    className="shrink-0 rounded-lg border border-red-200 px-3 py-1 text-sm font-medium text-red-700"
-                  >
-                    Xóa
-                  </button>
                 </li>
               ))}
             </ul>
@@ -159,3 +176,4 @@ export default function Accounts() {
     </div>
   );
 }
+

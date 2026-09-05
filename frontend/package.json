@@ -11,6 +11,7 @@
   "devDependencies": {
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.5",
     "postcss": "^8.5.28",
@@ -19,7 +20,12 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "@react-three/fiber": "^8.18.0",
+    "@shadergradient/react": "^2.4.20",
+    "camera-controls": "^3.1.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.185.1",
+    "three-stdlib": "^2.36.1"
   }
 }

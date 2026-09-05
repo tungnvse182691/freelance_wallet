@@ -26,7 +26,9 @@ public class TransactionsController(AppDbContext db) : ControllerBase
             return BadRequest(new { message = "Loại giao dịch không hợp lệ" });
         if (dto.ProjectId.HasValue && !await db.Projects.AnyAsync(p => p.Id == dto.ProjectId))
             return BadRequest(new { message = "Job không tồn tại" });
-        var t = new Transaction { ProjectId = dto.ProjectId, Type = dto.Type, Amount = dto.Amount, Date = dto.Date, Note = dto.Note };
+        if (dto.AccountId.HasValue && !await db.Accounts.AnyAsync(a => a.Id == dto.AccountId))
+            return BadRequest(new { message = "Ví không tồn tại" });
+        var t = new Transaction { ProjectId = dto.ProjectId, Type = dto.Type, Amount = dto.Amount, Date = dto.Date, Note = dto.Note, AccountId = dto.AccountId, Category = string.IsNullOrWhiteSpace(dto.Category) ? null : dto.Category.Trim() };
         db.Transactions.Add(t);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(Get), new { id = t.Id }, t);

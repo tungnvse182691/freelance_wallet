@@ -11,6 +11,9 @@ public class Transaction
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid? ProjectId { get; set; }
     public Project? Project { get; set; }
+    public Guid? AccountId { get; set; }
+    public Account? Account { get; set; }
+    public string? Category { get; set; }
     public string Type { get; set; } = TransactionTypes.Income;
     public decimal Amount { get; set; }
     public DateOnly Date { get; set; }

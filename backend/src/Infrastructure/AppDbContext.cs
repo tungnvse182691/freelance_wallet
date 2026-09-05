@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Client> Clients => Set<Client>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -20,7 +21,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         b.Entity<Transaction>(e =>
         {
             e.Property(t => t.Amount).HasColumnType("numeric(18,2)");
+            e.Property(t => t.Category).HasMaxLength(100);
+            e.HasOne(t => t.Account).WithMany(a => a.Transactions)
+                .HasForeignKey(t => t.AccountId).OnDelete(DeleteBehavior.SetNull);
             e.HasIndex(t => t.Date);
+            e.HasIndex(t => t.AccountId);
+        });
+        b.Entity<Account>(e =>
+        {
+            e.Property(a => a.OpeningBalance).HasColumnType("numeric(18,2)");
         });
         b.Entity<Invoice>(e =>
         {

@@ -18,10 +18,15 @@ public class DashboardController(AppDbContext db) : ControllerBase
         var txs = await db.Transactions.Where(t => t.Date.Year == m.Year && t.Date.Month == m.Month).ToListAsync();
         var projects = await db.Projects.Include(p => p.Client).ToListAsync();
         var (income, expense, profit) = DashboardService.Compute(txs, m.Year, m.Month);
+        var accounts = await db.Accounts.OrderBy(a => a.Name).ToListAsync();
+        var allTxs = await db.Transactions.ToListAsync();
+        var balances = DashboardService.ComputeBalances(accounts, allTxs);
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         return Ok(new DashboardResponse(income, expense, profit,
             DashboardService.FindOverdue(projects, today),
             projects.Where(p => p.Status == ProjectStatuses.Doing)
-                .Select(p => new { p.Id, p.Title, ClientName = p.Client!.Name, p.Deadline, p.Price }).ToList<object>()));
+                .Select(p => new { p.Id, p.Title, ClientName = p.Client!.Name, p.Deadline, p.Price }).ToList<object>(),
+            balances.Total, balances.Balances,
+            DashboardService.GroupExpenseByCategory(txs, m.Year, m.Month)));
     }
 }

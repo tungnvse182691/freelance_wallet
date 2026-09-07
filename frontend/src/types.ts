@@ -70,6 +70,14 @@ export interface CategoryTotal {
   total: number;
 }
 
+export interface NoteRecord {
+  id: string;
+  title: string;
+  content?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiError {
   message: string;
 }

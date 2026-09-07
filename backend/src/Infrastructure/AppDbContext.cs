@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<Note> Notes => Set<Note>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -35,6 +36,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.HasIndex(i => i.Code).IsUnique();
             e.HasIndex(i => i.ProjectId).IsUnique();
+        });
+        b.Entity<Note>(e =>
+        {
+            e.Property(n => n.Title).HasMaxLength(200);
+            e.HasIndex(n => n.UpdatedAt);
         });
         foreach (var et in b.Model.GetEntityTypes())
             foreach (var p in et.GetProperties().Where(p => p.ClrType == typeof(DateTime)))

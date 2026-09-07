@@ -8,6 +8,8 @@ public record UpdateTransactionDto(Guid? ProjectId, string Type, decimal Amount,
 public record UpdateClientDto(string Name, string? Phone, string? Email, string? BankAccount, string? Note);
 public record CreateAccountDto(string Name, decimal OpeningBalance);
 public record UpdateAccountDto(string Name, decimal OpeningBalance);
+public record CreateNoteDto(string Title, string? Content);
+public record UpdateNoteDto(string Title, string? Content);
 public record DashboardResponse(decimal Income, decimal Expense, decimal Profit,
     IReadOnlyList<Services.OverdueItemDto> Overdue, IReadOnlyList<object> Doing,
     decimal TotalBalance, IReadOnlyList<Services.AccountBalanceDto> Accounts,

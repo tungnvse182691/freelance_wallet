@@ -4,9 +4,10 @@ import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import Accounts from "./pages/Accounts";
 import Transactions from "./pages/Transactions";
+import Notes from "./pages/Notes";
 import { AmbientBackground } from "./components/Cards";
 
-type Tab = "overview" | "jobs" | "clients" | "txs" | "wallets";
+type Tab = "overview" | "jobs" | "clients" | "txs" | "wallets" | "notes";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Tổng quan" },
@@ -14,6 +15,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "clients", label: "Khách" },
   { id: "txs", label: "Thu chi" },
   { id: "wallets", label: "Ví" },
+  { id: "notes", label: "Ghi chú" },
 ];
 
 function currentMonth(): string {
@@ -108,6 +110,7 @@ export default function App() {
         {tab === "clients" && <Clients />}
         {tab === "txs" && <Transactions month={month} />}
         {tab === "wallets" && <Accounts />}
+        {tab === "notes" && <Notes />}
       </main>
     </div>
   );
